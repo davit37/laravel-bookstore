@@ -41,6 +41,9 @@ Route::resource('categories', 'CategoryController');
 //book
 Route::group(['prefix' => 'books'], function () {
     Route::get('/trash', 'BookController@trash')->name('books.trash');
+    Route::post('{id}/restore','BookController@restore')->name('books.restore');
+    Route::delete('{id}/delete-permanent', 'BookController@deletePermanent')
+        ->name('books.permanent-delete');
 });
 
 Route::resource('books', 'BookController');
