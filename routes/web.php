@@ -27,15 +27,20 @@ Route::resource('users', 'UsersController');
 
 
 //Categories route
-Route::get('/categories/trash','CategoryController@trash')->name('categories.trash');
-Route::get('/categories/{id}/restore','CategoryController@restore')->name('categories.restore');
-Route::delete('/categories/{id}/permanent-delete','CategoryController@deletePermanent')->name('categories.permanent-delete');
-Route::resource('categories', 'CategoryController');
 Route::get('/ajax/categories/search', 'CategoryController@ajaxSearch');
+
+Route::group(['prefix' => 'categories'], function () {
+    Route::get('/trash','CategoryController@trash')->name('categories.trash');
+    Route::get('{id}/restore','CategoryController@restore')->name('categories.restore');
+    Route::delete('/{id}/permanent-delete','CategoryController@deletePermanent')
+        ->name('categories.permanent-delete');
+});
+Route::resource('categories', 'CategoryController');
+
 
 //book
 Route::group(['prefix' => 'books'], function () {
-    
+    Route::get('/trash', 'BookController@trash')->name('books.trash');
 });
 
 Route::resource('books', 'BookController');

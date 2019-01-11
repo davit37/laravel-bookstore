@@ -44,9 +44,8 @@ class BookController extends Controller
         $new_book->price = $request->get('price');
         $new_book->stock = $request->get('stock');
 
-        $new_book->status = $request->get('save_action');
+        
 
-        $new_book->status = $request->get('save_action');
 
         $cover = $request->file('cover');
 
@@ -94,7 +93,9 @@ class BookController extends Controller
      */
     public function edit($id)
     {
-        //
+        $book = \App\Book::findOrFail($id);
+
+        return view('books.edit', ['book' => $book]);
     }
 
     /**
@@ -106,7 +107,37 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $book = \App\Book::findOrFail($id);
+
+        $book->title = $request->get('title');
+        $book->slug = $request->get('slug');
+        $book->description = $request->get('description');
+        $book->author = $request->get('author');
+        $book->publisher = $request->get('publisher');
+        $book->stock = $request->get('stock');
+        $book->price = $request->get('price');
+
+        $new_cover = $request->file('cover');
+
+        if($new_cover){
+            if($book->cover && file_exists(storage_path('app/public/' . $book->cover))){
+                \Storage::delete('public/'. $book->cover);
+            }
+
+            $new_cover_path = $new_cover->store('book-covers', 'public');
+
+            $book->cover = $new_cover_path;
+        }
+
+        $book->updated_by = \Auth::user()->id;
+
+        $book->status = $request->get('status');
+
+        $book->save();
+
+        $book->categories()->sync($request->get('categories'));
+
+        return redirect()->route('books.edit', ['id'=>$book->id])->with('status', 'Book successfully updated');
     }
 
     /**
@@ -117,6 +148,16 @@ class BookController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $book = \App\Book::findOrFail($id);
+        $book->delete();
+
+        return redirect()->route('books.index')->with('status', 'Book moved to trash');
+    }
+
+
+    public function trash(){
+        $books = \App\Book::onlyTrashed()->paginate(10);
+
+        return view('books.trash', ['books' => $books]);
     }
 }
